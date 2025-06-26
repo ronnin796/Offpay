@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/qr_scan_screen.dart';
+import 'screens/index.dart';
 
 void main() {
   runApp(const OffPayApp());
@@ -14,7 +14,7 @@ class OffPayApp extends StatelessWidget {
       title: 'OffPay',
       theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
-      home: const QRScanScreen(),
+      home: const IndexScreen(),
     );
   }
 }
