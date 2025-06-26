@@ -35,6 +35,7 @@ dependencies:
   shared_preferences: ^2.2.2 # for local storage
   http: ^1.2.1               # for backend sync
   connectivity_plus: ^5.0.2  # for detecting online status
+  qr_flutter: ^4.1.0
 
 
 dev_dependencies:
