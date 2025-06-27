@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -29,11 +31,32 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No internet connection')));
       return;
     }
-    // Simulate backend sync
-    await Future.delayed(const Duration(seconds: 1));
-    tx['synced'] = true;
-    await TransactionQueue.update(index, tx);
-    setState(() => _loadTransactions());
+    // Prepare only the required fields for backend
+    final txForBackend = {
+      'method': tx['method'],
+      'sender': tx['sender'],
+      'receiver': tx['receiver'],
+      'amount': tx['amount'],
+      'timestamp': tx['timestamp'],
+    };
+    final url = Uri.parse('http://10.200.10.156:8000/api/sync/');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: '[${jsonEncode(txForBackend)}]', // Django expects a list
+      );
+      if (response.statusCode == 201) {
+        tx['synced'] = true;
+        await TransactionQueue.update(index, tx);
+        setState(() => _loadTransactions());
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Synced with server')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sync failed: ${response.body}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sync error: $e')));
+    }
   }
 
   Future<void> _syncAll(List<Map<String, dynamic>> txs) async {
@@ -45,12 +68,10 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
     for (int i = 0; i < txs.length; i++) {
       final tx = txs[i];
       if (!(tx['synced'] ?? false)) {
+        await _syncTransaction(i, tx);
         await Future.delayed(const Duration(milliseconds: 500));
-        tx['synced'] = true;
-        await TransactionQueue.update(i, tx);
       }
     }
-    setState(() => _loadTransactions());
   }
 
   @override
@@ -91,9 +112,9 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
               final synced = tx['synced'] == true;
               return ListTile(
                 leading: Icon(Icons.qr_code_2_rounded, color: synced ? Colors.green : Colors.orangeAccent),
-                title: Text('To: ${tx['name'] ?? '-'}'),
+                title: Text('To: ${tx['receiver']?['name'] ?? '-'} (${tx['receiver']?['phone'] ?? '-'})'),
                 subtitle: Text(
-                  'Phone: ${tx['phone'] ?? '-'}\n'
+                  'From: ${tx['sender']?['name'] ?? '-'} (${tx['sender']?['phone'] ?? '-'})\n'
                   'Amount: ₹${tx['amount'] ?? '-'}\n'
                   'Time: $dt',
                 ),

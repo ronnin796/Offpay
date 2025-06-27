@@ -42,12 +42,14 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         return;
       }
 
+      // Save in required format for backend sync
       await TransactionQueue.queue({
         'method': 'QR',
-        'name': widget.name,
-        'phone': widget.phone,
+        'sender': {'name': 'Pawan', 'phone': '9842809000'}, // Hardcoded for demo
+        'receiver': {'name': widget.name, 'phone': widget.phone},
         'amount': enteredAmount,
         'timestamp': DateTime.now().toIso8601String(),
+        'status': 'queued',
       });
 
       showDialog(
