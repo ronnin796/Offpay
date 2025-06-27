@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'qr_generate_screen.dart';
 import 'qr_scan_screen.dart';
 import '../services/transactions_history_screen.dart';
+import './bluetooth_receiver.dart';
+import './bluetooth_sender.dart';
 
 class IndexScreen extends StatelessWidget {
   const IndexScreen({super.key});
@@ -91,6 +93,14 @@ class IndexScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (_) => const TransactionsHistoryScreen()),
                   ),
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReceiverBluetoothServerScreen()),
+                  ),
+                  child: const Text('Receive Payment via Bluetooth'),
                 ),
               ],
             ),

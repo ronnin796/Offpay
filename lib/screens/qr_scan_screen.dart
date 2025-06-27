@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:image_picker/image_picker.dart';
-import 'payment_form_screen.dart';
+import 'bluetooth_sender.dart';
 
 class QRScanScreen extends StatefulWidget {
   const QRScanScreen({super.key});
@@ -26,18 +26,19 @@ class _QRScanScreenState extends State<QRScanScreen> {
   }
 
   void _handleScannedData(String? data) {
-    if (data != null && data is String && data.trim().isNotEmpty) {
+    if (data != null && data.trim().isNotEmpty) {
       try {
         final Map<String, dynamic> parsed = jsonDecode(data);
         if (parsed.containsKey('name') && parsed.containsKey('phone') && parsed.containsKey('expected_amount')) {
           setState(() => _scanned = true);
+          // Instead of PaymentFormScreen, go to BluetoothTransactionScreen
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => PaymentFormScreen(
-                name: parsed['name'],
-                phone: parsed['phone'],
-                expectedAmount: double.tryParse(parsed['expected_amount'].toString()) ?? 0.0,
+              builder: (_) => BluetoothTransactionScreen(
+                receiverName: parsed['name'],
+                receiverPhone: parsed['phone'],
+                amount: double.tryParse(parsed['expected_amount'].toString()) ?? 0.0,
               ),
             ),
           );
