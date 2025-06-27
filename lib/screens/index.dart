@@ -1,6 +1,7 @@
+// 🔹 screens/index.dart
 import 'package:flutter/material.dart';
-import 'qr_scan_screen.dart';
 import 'qr_generate_screen.dart';
+import 'qr_scan_screen.dart';
 import '../services/transactions_history_screen.dart';
 
 class IndexScreen extends StatelessWidget {
@@ -8,100 +9,98 @@ class IndexScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('OFFluuter Pay'),
+        title: const Text('OFFluuter Pay', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+        padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Spacer(),
-            CircleAvatar(
-              radius: 48,
-              backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-              child: const Icon(Icons.offline_bolt, size: 56, color: Colors.orangeAccent),
-            ),
             const SizedBox(height: 24),
+            // Logo/Icon
+            CircleAvatar(
+              radius: 44,
+              backgroundColor: colorScheme.primary.withOpacity(0.08),
+              child: Icon(Icons.offline_bolt, size: 48, color: colorScheme.primary),
+            ),
+            const SizedBox(height: 18),
             const Text(
               'Welcome to OFFluuter Pay',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, letterSpacing: 0.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Fast, secure, and offline payments at your fingertips.',
-              style: TextStyle(fontSize: 15, color: Colors.grey),
+              'Send and receive payments instantly,\neven without internet.',
+              style: TextStyle(fontSize: 15, color: Colors.grey[400]),
               textAlign: TextAlign.center,
             ),
             const Spacer(),
-            Row(
+            // Buttons
+            Column(
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.send),
-                    label: const Text('Send'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const QRScanScreen()),
-                      );
-                    },
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.qr_code),
+                  label: const Text('Receive (Generate QR)'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    backgroundColor: colorScheme.secondary,
+                    foregroundColor: colorScheme.onSecondary,
+                    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QRGenerateScreen()),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.qr_code),
-                    label: const Text('Receive'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const QRGenerateScreen()),
-                      );
-                    },
+                const SizedBox(height: 14),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text('Send (Scan QR)'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const QRScanScreen()),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.history),
+                  label: const Text('Transaction History'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    foregroundColor: colorScheme.primary,
+                    textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+                    side: BorderSide(color: colorScheme.primary, width: 1.2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TransactionsHistoryScreen()),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            Card(
-              color: Colors.grey[900],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                leading: const Icon(Icons.history, color: Colors.orangeAccent),
-                title: const Text('View Offline Transactions'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TransactionsHistoryScreen()),
-                  );
-                },
-              ),
-            ),
             const Spacer(),
             Text(
-              'Powered by Flutter • Offline Ready',
+              'Made with Flutter • Offline Ready',
               style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

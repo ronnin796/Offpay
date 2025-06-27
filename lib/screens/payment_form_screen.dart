@@ -1,11 +1,18 @@
+// 🔹 screens/payment_form_screen.dart
 import 'package:flutter/material.dart';
 import '../services/transactions_queue.dart';
 
 class PaymentFormScreen extends StatefulWidget {
   final String name;
   final String phone;
+  final double expectedAmount;
 
-  const PaymentFormScreen({super.key, required this.name, required this.phone});
+  const PaymentFormScreen({
+    super.key,
+    required this.name,
+    required this.phone,
+    required this.expectedAmount,
+  });
 
   @override
   State<PaymentFormScreen> createState() => _PaymentFormScreenState();
@@ -13,30 +20,49 @@ class PaymentFormScreen extends StatefulWidget {
 
 class _PaymentFormScreenState extends State<PaymentFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _amountController = TextEditingController();
+  final _amountController = TextEditingController();
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      final transaction = {
+      final enteredAmount = double.parse(_amountController.text.trim());
+      if (enteredAmount != widget.expectedAmount) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Amount Mismatch'),
+            content: const Text('Entered amount does not match the requested amount.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      await TransactionQueue.queue({
         'method': 'QR',
         'name': widget.name,
         'phone': widget.phone,
-        'amount': double.parse(_amountController.text),
+        'amount': enteredAmount,
         'timestamp': DateTime.now().toIso8601String(),
-      };
-      await TransactionQueue.queue(transaction);
+      });
 
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Transaction Queued'),
-          content: Text('Payment to ${widget.name} queued successfully.'),
+          title: const Text('Payment Queued'),
+          content: const Text('Your payment has been queued for offline processing.'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.pop(context);
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
-              child: const Text('Done'),
+              child: const Text('OK'),
             ),
           ],
         ),
@@ -46,38 +72,54 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Enter Payment Amount')),
+      appBar: AppBar(title: const Text('Confirm Amount'), centerTitle: true),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                initialValue: widget.name,
-                decoration: const InputDecoration(labelText: 'Receiver Name'),
-                enabled: false,
-              ),
-              TextFormField(
-                initialValue: widget.phone,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
-                enabled: false,
-              ),
-              TextFormField(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Pay to: ${widget.name}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text('Phone: ${widget.phone}', style: TextStyle(color: Colors.grey[400])),
+            const SizedBox(height: 16),
+            Text('Requested Amount: ₹${widget.expectedAmount}', style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 24),
+            Form(
+              key: _formKey,
+              child: TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(labelText: 'Amount'),
+                decoration: const InputDecoration(
+                  labelText: 'Enter Amount',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.currency_rupee),
+                ),
                 keyboardType: TextInputType.number,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter amount' : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Enter amount';
+                  final n = double.tryParse(v.trim());
+                  if (n == null || n <= 0) return 'Enter valid amount';
+                  return null;
+                },
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
                 onPressed: _submit,
-                child: const Text('Queue Payment'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Confirm & Queue Payment'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
